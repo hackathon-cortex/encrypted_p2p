@@ -164,34 +164,57 @@ class _DrawerTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final isEmergency = item.isEmergency;
 
+    Color tileBg = Colors.transparent;
+    Color iconColor = isEmergency ? AppColors.critical : AppColors.textSecondary;
+    Color textColor = isEmergency ? AppColors.critical : AppColors.textPrimary;
+
+    if (isSelected) {
+      tileBg = isEmergency ? AppColors.critical.withValues(alpha: 0.15) : AppColors.primary.withValues(alpha: 0.15);
+      iconColor = isEmergency ? AppColors.critical : AppColors.primaryLight;
+      textColor = isEmergency ? AppColors.critical : AppColors.white;
+    }
+
     return Container(
       margin: const EdgeInsets.only(bottom: 2),
-      decoration: BoxDecoration(
-        color: isSelected
-            ? (isEmergency ? AppColors.critical.withValues(alpha: 0.15) : AppColors.primary.withValues(alpha: 0.15))
-            : Colors.transparent,
+      child: Material(
+        color: tileBg,
         borderRadius: BorderRadius.circular(8),
-      ),
-      child: ListTile(
-        dense: true,
-        leading: Icon(
-          isSelected ? item.selectedIcon : item.icon,
-          color: isSelected
-              ? (isEmergency ? AppColors.critical : AppColors.primaryLight)
-              : (isEmergency ? AppColors.critical : AppColors.textSecondary),
-          size: 20,
-        ),
-        title: Text(
-          item.label,
-          style: TextStyle(
-            color: isSelected
-                ? (isEmergency ? AppColors.critical : AppColors.white)
-                : (isEmergency ? AppColors.critical : AppColors.textPrimary),
-            fontSize: 13,
-            fontWeight: isSelected ? FontWeight.bold : FontWeight.w400,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(8),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            child: Row(
+              children: [
+                Icon(
+                  isSelected ? item.selectedIcon : item.icon,
+                  color: iconColor,
+                  size: 20,
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(
+                    item.label,
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: 13,
+                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w400,
+                    ),
+                  ),
+                ),
+                if (isEmergency)
+                  Container(
+                    width: 7,
+                    height: 7,
+                    decoration: const BoxDecoration(
+                      color: AppColors.critical,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
-        onTap: onTap,
       ),
     );
   }

@@ -1,8 +1,17 @@
 import '../models/location_model.dart';
 
+enum LocationPermissionState {
+  granted,
+  denied,
+  permanentlyDenied,
+  serviceDisabled,
+}
+
 class LocationService {
   bool _isLocationSharingEnabled = true;
   String _sharingAudience = 'Squadron Alpha'; // 'Squadron Alpha', 'Command Only', 'Custom'
+  LocationPermissionState _permissionState = LocationPermissionState.granted;
+
   TacticalLocationModel _myLocation = TacticalLocationModel(
     userId: 'usr_cortex_01',
     userName: 'Alex Morgan',
@@ -22,6 +31,8 @@ class LocationService {
 
   bool get isLocationSharingEnabled => _isLocationSharingEnabled;
   String get sharingAudience => _sharingAudience;
+  LocationPermissionState get permissionState => _permissionState;
+  bool get hasLocationPermission => _permissionState == LocationPermissionState.granted;
   TacticalLocationModel get myLocation => _myLocation;
   List<TacticalLocationModel> get peerLocations => List.unmodifiable(_peerLocations);
 
@@ -84,6 +95,17 @@ class LocationService {
     ]);
   }
 
+  Future<LocationPermissionState> requestLocationPermission() async {
+    // In production or tactical node, grant permission
+    _permissionState = LocationPermissionState.granted;
+    _myLocation = _myLocation.copyWith(timestamp: DateTime.now());
+    return _permissionState;
+  }
+
+  void setPermissionState(LocationPermissionState state) {
+    _permissionState = state;
+  }
+
   void toggleLocationSharing(bool enabled) {
     _isLocationSharingEnabled = enabled;
     _myLocation = _myLocation.copyWith(
@@ -96,10 +118,12 @@ class LocationService {
     _sharingAudience = audience;
   }
 
-  void updateCoordinates({required double lat, required double lng}) {
+  void updateCoordinates({required double lat, required double lng, double? altitude, double? accuracy}) {
     _myLocation = _myLocation.copyWith(
       latitude: lat,
       longitude: lng,
+      altitude: altitude ?? _myLocation.altitude,
+      accuracyMeters: accuracy ?? _myLocation.accuracyMeters,
       timestamp: DateTime.now(),
     );
   }

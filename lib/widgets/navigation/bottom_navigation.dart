@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/navigation/navigation_models.dart';
+import '../../core/state/app_state_provider.dart';
 import '../../core/theme/app_colors.dart';
 
 class MobileBottomNavigation extends StatelessWidget {
@@ -14,12 +15,15 @@ class MobileBottomNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 5 top frequent tabs for mobile bottom bar:
-    // 0: Dashboard, 1: Chat, 2: Files, 4: Security, 5: Personnel
+    final appState = AppStateProvider.of(context);
+    final isSosActive = appState.sosService.isSosActive;
+
+    // 5 primary mobile bottom bar tabs:
+    // 0: Dashboard, 1: Chat, 7: Emergency SOS, 4: Security, 5: Personnel
     final topTabs = [
       AppNavItems.primaryItems[0], // Dashboard
       AppNavItems.primaryItems[1], // Secure Chat
-      AppNavItems.primaryItems[2], // Files
+      AppNavItems.primaryItems[7], // Emergency SOS
       AppNavItems.primaryItems[4], // Security
       AppNavItems.primaryItems[5], // Personnel
     ];
@@ -39,6 +43,15 @@ class MobileBottomNavigation extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: topTabs.map((item) {
               final isSelected = selectedIndex == item.index;
+              final isEmergency = item.isEmergency;
+
+              Color iconColor = isSelected
+                  ? (isEmergency ? AppColors.critical : AppColors.primaryLight)
+                  : (isEmergency ? AppColors.critical : AppColors.textMuted);
+
+              Color textColor = isSelected
+                  ? (isEmergency ? AppColors.critical : AppColors.primaryLight)
+                  : (isEmergency ? AppColors.critical : AppColors.textMuted);
 
               return Expanded(
                 child: InkWell(
@@ -46,18 +59,36 @@ class MobileBottomNavigation extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        isSelected ? item.selectedIcon : item.icon,
-                        color: isSelected ? AppColors.primaryLight : AppColors.textMuted,
-                        size: 22,
+                      Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Icon(
+                            isSelected ? item.selectedIcon : item.icon,
+                            color: iconColor,
+                            size: isEmergency ? 24 : 22,
+                          ),
+                          if (isEmergency && isSosActive)
+                            Positioned(
+                              top: -2,
+                              right: -4,
+                              child: Container(
+                                width: 8,
+                                height: 8,
+                                decoration: const BoxDecoration(
+                                  color: AppColors.critical,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                            ),
+                        ],
                       ),
                       const SizedBox(height: 3),
                       Text(
-                        item.label,
+                        isEmergency ? 'SOS' : item.label,
                         style: TextStyle(
-                          color: isSelected ? AppColors.primaryLight : AppColors.textMuted,
+                          color: textColor,
                           fontSize: 10,
-                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                          fontWeight: (isSelected || isEmergency) ? FontWeight.w700 : FontWeight.w400,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,

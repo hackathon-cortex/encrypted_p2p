@@ -65,18 +65,6 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
       appBar: CortexAppBar(
         title: 'NOTIFICATION CENTER',
         subtitle: '$unreadCount UNREAD ALERTS • PRIORITY DISPATCH',
-        leading: Builder(
-          builder: (ctx) {
-            final isMobile = MediaQuery.of(context).size.width < 800;
-            if (isMobile) {
-              return IconButton(
-                icon: const Icon(Icons.menu_rounded, color: AppColors.textPrimary),
-                onPressed: () => Scaffold.of(ctx).openDrawer(),
-              );
-            }
-            return const SizedBox.shrink();
-          },
-        ),
         actions: [
           if (unreadCount > 0)
             TextButton(

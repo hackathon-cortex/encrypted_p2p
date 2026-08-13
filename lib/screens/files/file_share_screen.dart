@@ -269,18 +269,6 @@ class _FileShareScreenState extends State<FileShareScreen> {
       appBar: CortexAppBar(
         title: 'SECURE FILE SHARING',
         subtitle: 'P2P ZERO-KNOWLEDGE ENCRYPTED TRANSFER',
-        leading: Builder(
-          builder: (ctx) {
-            final isMobile = MediaQuery.of(context).size.width < 800;
-            if (isMobile) {
-              return IconButton(
-                icon: const Icon(Icons.menu_rounded, color: AppColors.textPrimary),
-                onPressed: () => Scaffold.of(ctx).openDrawer(),
-              );
-            }
-            return const SizedBox.shrink();
-          },
-        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),

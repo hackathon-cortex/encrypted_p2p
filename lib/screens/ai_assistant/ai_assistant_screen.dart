@@ -80,18 +80,6 @@ class _AiAssistantScreenState extends State<AiAssistantScreen> {
       appBar: CortexAppBar(
         title: 'CORTEX AI SENTINEL',
         subtitle: 'AUTONOMOUS CYBERSECURITY & THREAT ANALYST',
-        leading: Builder(
-          builder: (ctx) {
-            final isMobile = MediaQuery.of(context).size.width < 800;
-            if (isMobile) {
-              return IconButton(
-                icon: const Icon(Icons.menu_rounded, color: AppColors.textPrimary),
-                onPressed: () => Scaffold.of(ctx).openDrawer(),
-              );
-            }
-            return const SizedBox.shrink();
-          },
-        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh_rounded, color: AppColors.textMuted, size: 20),

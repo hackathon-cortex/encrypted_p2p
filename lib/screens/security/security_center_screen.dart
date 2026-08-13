@@ -33,18 +33,6 @@ class _SecurityCenterScreenState extends State<SecurityCenterScreen> {
       appBar: CortexAppBar(
         title: 'SECURITY CENTER',
         subtitle: 'PERIMETER DEFENSE • REAL-TIME THREAT RADAR',
-        leading: Builder(
-          builder: (ctx) {
-            final isMobile = MediaQuery.of(context).size.width < 800;
-            if (isMobile) {
-              return IconButton(
-                icon: const Icon(Icons.menu_rounded, color: AppColors.textPrimary),
-                onPressed: () => Scaffold.of(ctx).openDrawer(),
-              );
-            }
-            return const SizedBox.shrink();
-          },
-        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -56,97 +44,101 @@ class _SecurityCenterScreenState extends State<SecurityCenterScreen> {
               builder: (context, constraints) {
                 final isWide = constraints.maxWidth >= 700;
 
-                return Flex(
-                  direction: isWide ? Axis.horizontal : Axis.vertical,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Security Score Card
-                    Expanded(
-                      flex: isWide ? 4 : 0,
-                      child: CortexCard(
-                        padding: const EdgeInsets.all(20),
-                        child: Column(
-                          children: [
-                            SecurityGauge(
-                              score: securityScore,
-                              statusText: statusText,
-                              size: 140,
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Last full scan: ${appState.securityService.lastScanTime.hour.toString().padLeft(2, "0")}:${appState.securityService.lastScanTime.minute.toString().padLeft(2, "0")}',
-                              style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
-                            ),
-                            const SizedBox(height: 12),
-                            if (isScanning) ...[
-                              LinearProgressIndicator(
-                                value: scanProgress,
-                                backgroundColor: AppColors.surfaceElevated,
-                                color: AppColors.primaryLight,
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                'SCANNING RELAY NODES... ${(scanProgress * 100).toInt()}%',
-                                style: const TextStyle(color: AppColors.accentCyan, fontSize: 10, fontFamily: 'monospace'),
-                              ),
-                            ] else ...[
-                              CortexButton(
-                                text: 'RUN FULL PERIMETER SCAN',
-                                icon: Icons.radar_rounded,
-                                isSmall: true,
-                                onPressed: () {
-                                  appState.runSecurityScan();
-                                },
-                              ),
-                            ],
-                          ],
+                final scoreCard = CortexCard(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    children: [
+                      SecurityGauge(
+                        score: securityScore,
+                        statusText: statusText,
+                        size: 140,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Last full scan: ${appState.securityService.lastScanTime.hour.toString().padLeft(2, "0")}:${appState.securityService.lastScanTime.minute.toString().padLeft(2, "0")}',
+                        style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+                      ),
+                      const SizedBox(height: 12),
+                      if (isScanning) ...[
+                        LinearProgressIndicator(
+                          value: scanProgress,
+                          backgroundColor: AppColors.surfaceElevated,
+                          color: AppColors.primaryLight,
                         ),
-                      ),
+                        const SizedBox(height: 6),
+                        Text(
+                          'SCANNING RELAY NODES... ${(scanProgress * 100).toInt()}%',
+                          style: const TextStyle(color: AppColors.accentCyan, fontSize: 10, fontFamily: 'monospace'),
+                        ),
+                      ] else ...[
+                        CortexButton(
+                          text: 'RUN FULL PERIMETER SCAN',
+                          icon: Icons.radar_rounded,
+                          isSmall: true,
+                          onPressed: () {
+                            appState.runSecurityScan();
+                          },
+                        ),
+                      ],
+                    ],
+                  ),
+                );
+
+                final breakdown = Column(
+                  children: [
+                    _SecuritySpecCard(
+                      icon: Icons.vpn_key_rounded,
+                      title: 'ASYMMETRIC CIPHER SUITE',
+                      value: 'AES-256-GCM + Curve25519 (ECDH)',
+                      status: 'HARDENED',
+                      statusColor: AppColors.success,
                     ),
-
-                    if (isWide) const SizedBox(width: 16) else const SizedBox(height: 16),
-
-                    // Diagnostic Breakdown
-                    Expanded(
-                      flex: isWide ? 6 : 0,
-                      child: Column(
-                        children: [
-                          _SecuritySpecCard(
-                            icon: Icons.vpn_key_rounded,
-                            title: 'ASYMMETRIC CIPHER SUITE',
-                            value: 'AES-256-GCM + Curve25519 (ECDH)',
-                            status: 'HARDENED',
-                            statusColor: AppColors.success,
-                          ),
-                          const SizedBox(height: 10),
-                          _SecuritySpecCard(
-                            icon: Icons.hub_rounded,
-                            title: 'P2P MESH NODE RELAY',
-                            value: '${appState.webSocketService.connectedPeersCount} Relays Connected • Zero-Trust Policy',
-                            status: 'SYNCHRONIZED',
-                            statusColor: AppColors.success,
-                          ),
-                          const SizedBox(height: 10),
-                          _SecuritySpecCard(
-                            icon: Icons.lock_person_rounded,
-                            title: 'FAILED AUTH CHALLENGES',
-                            value: '$failedLogins Invalid attempts recorded',
-                            status: failedLogins > 0 ? 'ALERT' : 'SECURE',
-                            statusColor: failedLogins > 0 ? AppColors.warning : AppColors.success,
-                          ),
-                          const SizedBox(height: 10),
-                          _SecuritySpecCard(
-                            icon: Icons.fingerprint_rounded,
-                            title: 'IDENTITY & BIOMETRICS',
-                            value: 'Hardware Biometric + TOTP 2FA Required',
-                            status: 'ACTIVE',
-                            statusColor: AppColors.success,
-                          ),
-                        ],
-                      ),
+                    const SizedBox(height: 10),
+                    _SecuritySpecCard(
+                      icon: Icons.hub_rounded,
+                      title: 'P2P MESH NODE RELAY',
+                      value: '${appState.webSocketService.connectedPeersCount} Relays Connected • Zero-Trust Policy',
+                      status: 'SYNCHRONIZED',
+                      statusColor: AppColors.success,
+                    ),
+                    const SizedBox(height: 10),
+                    _SecuritySpecCard(
+                      icon: Icons.lock_person_rounded,
+                      title: 'FAILED AUTH CHALLENGES',
+                      value: '$failedLogins Invalid attempts recorded',
+                      status: failedLogins > 0 ? 'ALERT' : 'SECURE',
+                      statusColor: failedLogins > 0 ? AppColors.warning : AppColors.success,
+                    ),
+                    const SizedBox(height: 10),
+                    _SecuritySpecCard(
+                      icon: Icons.fingerprint_rounded,
+                      title: 'IDENTITY & BIOMETRICS',
+                      value: 'Hardware Biometric + TOTP 2FA Required',
+                      status: 'ACTIVE',
+                      statusColor: AppColors.success,
                     ),
                   ],
                 );
+
+                if (isWide) {
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(flex: 4, child: scoreCard),
+                      const SizedBox(width: 16),
+                      Expanded(flex: 6, child: breakdown),
+                    ],
+                  );
+                } else {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      scoreCard,
+                      const SizedBox(height: 16),
+                      breakdown,
+                    ],
+                  );
+                }
               },
             ),
 

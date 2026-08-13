@@ -48,6 +48,13 @@ class AppStateProvider extends ChangeNotifier {
   int _selectedNavigationIndex = 0;
   int get selectedNavigationIndex => _selectedNavigationIndex;
 
+  // Root Scaffold Key for reliable drawer opening across all sub-screens
+  final GlobalKey<ScaffoldState> rootScaffoldKey = GlobalKey<ScaffoldState>();
+
+  void openDrawer() {
+    rootScaffoldKey.currentState?.openDrawer();
+  }
+
   void setNavigationIndex(int index) {
     _selectedNavigationIndex = index;
     notifyListeners();
@@ -303,20 +310,46 @@ class AppStateProvider extends ChangeNotifier {
   void triggerSos() {
     final user = authService.currentUser;
     final loc = locationService.myLocation;
+    final hasLocPermission = locationService.hasLocationPermission;
+    final currentDevice = deviceService.devices.firstWhere(
+      (d) => d.isCurrentDevice,
+      orElse: () => deviceService.devices.isNotEmpty ? deviceService.devices.first : throw StateError('No device found'),
+    );
+
+    final emergencyContactNames = personnelService.emergencyContacts.map((p) => '${p.fullName} (${p.callsign})').toList();
 
     final incident = sosService.triggerSos(
       triggeredById: user?.id ?? 'usr_cortex_01',
       triggeredByName: user?.fullName ?? 'Alex Morgan',
       callsign: user?.callsign ?? 'Vanguard-1',
-      latitude: loc.latitude,
-      longitude: loc.longitude,
-      emergencyContacts: personnelService.emergencyContacts.map((p) => p.fullName).toList(),
+      role: user?.role ?? 'Commander',
+      clearanceLevel: user?.clearanceLevel ?? 'Level 5 - Command Core',
+      latitude: hasLocPermission ? loc.latitude : null,
+      longitude: hasLocPermission ? loc.longitude : null,
+      altitude: hasLocPermission ? loc.altitude : null,
+      accuracyMeters: hasLocPermission ? loc.accuracyMeters : null,
+      locationPermissionGranted: hasLocPermission,
+      locationStatus: hasLocPermission ? 'GPS Geolocation Active (±${loc.accuracyMeters}m)' : 'Location Permission Denied',
+      deviceId: currentDevice.id,
+      deviceName: currentDevice.name,
+      deviceHardwareFingerprint: currentDevice.hardwareFingerprint,
+      deviceIp: currentDevice.ipAddress,
+      platform: currentDevice.platform.name.toUpperCase(),
+      connectedPeersCount: webSocketService.connectedPeersCount,
+      isMeshConnected: webSocketService.isConnected,
+      emergencyContacts: emergencyContactNames,
+      encryptionService: encryptionService,
     );
+
+    // Broadcast across P2P WebSocket mesh if connected
+    if (webSocketService.isConnected) {
+      webSocketService.sendMessage(incident.payload?.encryptedData ?? 'SOS_BROADCAST');
+    }
 
     // Create Critical Security Threat
     securityService.addThreat(
       title: 'CRITICAL EMERGENCY SOS ACTIVATED',
-      description: 'Emergency distress beacon activated by ${incident.triggeredByName} at coordinates ${loc.latitude.toStringAsFixed(4)}, ${loc.longitude.toStringAsFixed(4)}.',
+      description: 'Emergency distress beacon activated by ${incident.triggeredByName} (${incident.callsign}). Geolocation: ${hasLocPermission ? "${loc.latitude.toStringAsFixed(4)}, ${loc.longitude.toStringAsFixed(4)}" : "GPS coordinates unavailable (permission denied)"}.',
       severity: ThreatSeverity.critical,
       threatType: ThreatType.sosBroadcast,
     );
@@ -336,7 +369,8 @@ class AppStateProvider extends ChangeNotifier {
       severity: AuditSeverity.critical,
       category: AuditCategory.sos,
       actor: user?.username ?? 'user',
-      description: 'Emergency SOS beacon broadcasting. Telemetry: Lat ${loc.latitude}, Lng ${loc.longitude}.',
+      targetDevice: currentDevice.name,
+      description: 'Emergency SOS beacon broadcasting. Telemetry: Lat ${hasLocPermission ? loc.latitude : "N/A"}, Lng ${hasLocPermission ? loc.longitude : "N/A"}. Digest: ${incident.payload?.payloadHash ?? "N/A"}.',
     );
 
     notifyListeners();
@@ -376,6 +410,13 @@ class AppStateProvider extends ChangeNotifier {
 
   void cancelSos() {
     sosService.cancelSos();
+    auditService.logEvent(
+      eventType: 'SOS_CANCELLED',
+      severity: AuditSeverity.info,
+      category: AuditCategory.sos,
+      actor: authService.currentUser?.username ?? 'user',
+      description: 'Emergency SOS cancelled by user before dispatch resolution.',
+    );
     notifyListeners();
   }
 

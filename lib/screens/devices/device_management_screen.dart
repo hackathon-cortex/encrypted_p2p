@@ -93,18 +93,6 @@ class _DeviceManagementScreenState extends State<DeviceManagementScreen> {
       appBar: CortexAppBar(
         title: 'DEVICE MANAGEMENT',
         subtitle: '${devices.length} REGISTERED HARDWARE NODES • ZERO-TRUST',
-        leading: Builder(
-          builder: (ctx) {
-            final isMobile = MediaQuery.of(context).size.width < 800;
-            if (isMobile) {
-              return IconButton(
-                icon: const Icon(Icons.menu_rounded, color: AppColors.textPrimary),
-                onPressed: () => Scaffold.of(ctx).openDrawer(),
-              );
-            }
-            return const SizedBox.shrink();
-          },
-        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),

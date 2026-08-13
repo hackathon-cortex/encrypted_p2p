@@ -133,18 +133,6 @@ class _AuditLogsScreenState extends State<AuditLogsScreen> {
       appBar: CortexAppBar(
         title: 'AUDIT LOGS & LEDGER',
         subtitle: 'IMMUTABLE CRYPTOGRAPHIC AUDIT TRAIL',
-        leading: Builder(
-          builder: (ctx) {
-            final isMobile = MediaQuery.of(context).size.width < 800;
-            if (isMobile) {
-              return IconButton(
-                icon: const Icon(Icons.menu_rounded, color: AppColors.textPrimary),
-                onPressed: () => Scaffold.of(ctx).openDrawer(),
-              );
-            }
-            return const SizedBox.shrink();
-          },
-        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.download_rounded, color: AppColors.textPrimary, size: 20),

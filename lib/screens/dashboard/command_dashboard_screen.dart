@@ -31,18 +31,6 @@ class CommandDashboardScreen extends StatelessWidget {
       appBar: CortexAppBar(
         title: 'COMMAND DASHBOARD',
         subtitle: 'TACTICAL NODE: ${user?.callsign ?? "Vanguard-1"} • MESH SYNCHRONIZED',
-        leading: Builder(
-          builder: (ctx) {
-            final isMobile = MediaQuery.of(context).size.width < 800;
-            if (isMobile) {
-              return IconButton(
-                icon: const Icon(Icons.menu_rounded, color: AppColors.textPrimary),
-                onPressed: () => Scaffold.of(ctx).openDrawer(),
-              );
-            }
-            return const SizedBox.shrink();
-          },
-        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -142,108 +130,112 @@ class CommandDashboardScreen extends StatelessWidget {
               builder: (context, constraints) {
                 final isWide = constraints.maxWidth >= 700;
 
-                return Flex(
-                  direction: isWide ? Axis.horizontal : Axis.vertical,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Security Health Gauge Card
-                    Expanded(
-                      flex: isWide ? 4 : 0,
-                      child: CortexCard(
-                        padding: const EdgeInsets.all(18),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text('SECURITY POSTURE', style: AppTypography.titleMedium),
-                                CortexBadge.encrypted(isSmall: true),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            SecurityGauge(
-                              score: securityScore,
-                              statusText: securityStatusText,
-                              size: 130,
-                            ),
-                            const SizedBox(height: 14),
-                            CortexButton.outline(
-                              text: 'SECURITY CENTER',
-                              icon: Icons.shield_outlined,
-                              isSmall: true,
-                              onPressed: () {
-                                appState.setNavigationIndex(4); // Security tab
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    if (isWide) const SizedBox(width: 16) else const SizedBox(height: 16),
-
-                    // Quick Telemetry Metrics Grid
-                    Expanded(
-                      flex: isWide ? 6 : 0,
-                      child: Column(
+                final securityCard = CortexCard(
+                  padding: const EdgeInsets.all(18),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _MetricCard(
-                                  icon: Icons.people_rounded,
-                                  iconColor: AppColors.primaryLight,
-                                  title: 'ONLINE PERSONNEL',
-                                  value: '$onlineCount / $totalPersonnel',
-                                  subtitle: 'Units Active',
-                                  onTap: () => appState.setNavigationIndex(5),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _MetricCard(
-                                  icon: Icons.hub_rounded,
-                                  iconColor: AppColors.accentCyan,
-                                  title: 'P2P MESH NODES',
-                                  value: '${appState.webSocketService.connectedPeersCount} Relays',
-                                  subtitle: 'Latency: ${appState.webSocketService.networkLatency}',
-                                  onTap: () => appState.setNavigationIndex(6),
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: _MetricCard(
-                                  icon: Icons.shield_outlined,
-                                  iconColor: activeThreats.isNotEmpty ? AppColors.warning : AppColors.success,
-                                  title: 'ACTIVE THREATS',
-                                  value: '${activeThreats.length}',
-                                  subtitle: activeThreats.isNotEmpty ? 'Mitigation Needed' : 'Perimeter Secure',
-                                  onTap: () => appState.setNavigationIndex(4),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: _MetricCard(
-                                  icon: Icons.devices_rounded,
-                                  iconColor: AppColors.primaryLight,
-                                  title: 'TRUSTED DEVICES',
-                                  value: '$trustedDevicesCount Nodes',
-                                  subtitle: 'AES-256 Validated',
-                                  onTap: () => appState.setNavigationIndex(11),
-                                ),
-                              ),
-                            ],
-                          ),
+                          const Text('SECURITY POSTURE', style: AppTypography.titleMedium),
+                          CortexBadge.encrypted(isSmall: true),
                         ],
                       ),
+                      const SizedBox(height: 16),
+                      SecurityGauge(
+                        score: securityScore,
+                        statusText: securityStatusText,
+                        size: 130,
+                      ),
+                      const SizedBox(height: 14),
+                      CortexButton.outline(
+                        text: 'SECURITY CENTER',
+                        icon: Icons.shield_outlined,
+                        isSmall: true,
+                        onPressed: () {
+                          appState.setNavigationIndex(4); // Security tab
+                        },
+                      ),
+                    ],
+                  ),
+                );
+
+                final telemetryGrid = Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _MetricCard(
+                            icon: Icons.people_rounded,
+                            iconColor: AppColors.primaryLight,
+                            title: 'ONLINE PERSONNEL',
+                            value: '$onlineCount / $totalPersonnel',
+                            subtitle: 'Units Active',
+                            onTap: () => appState.setNavigationIndex(5),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _MetricCard(
+                            icon: Icons.hub_rounded,
+                            iconColor: AppColors.accentCyan,
+                            title: 'P2P MESH NODES',
+                            value: '${appState.webSocketService.connectedPeersCount} Relays',
+                            subtitle: 'Latency: ${appState.webSocketService.networkLatency}',
+                            onTap: () => appState.setNavigationIndex(6),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _MetricCard(
+                            icon: Icons.shield_outlined,
+                            iconColor: activeThreats.isNotEmpty ? AppColors.warning : AppColors.success,
+                            title: 'ACTIVE THREATS',
+                            value: '${activeThreats.length}',
+                            subtitle: activeThreats.isNotEmpty ? 'Mitigation Needed' : 'Perimeter Secure',
+                            onTap: () => appState.setNavigationIndex(4),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: _MetricCard(
+                            icon: Icons.devices_rounded,
+                            iconColor: AppColors.primaryLight,
+                            title: 'TRUSTED DEVICES',
+                            value: '$trustedDevicesCount Nodes',
+                            subtitle: 'AES-256 Validated',
+                            onTap: () => appState.setNavigationIndex(11),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 );
+
+                if (isWide) {
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(flex: 4, child: securityCard),
+                      const SizedBox(width: 16),
+                      Expanded(flex: 6, child: telemetryGrid),
+                    ],
+                  );
+                } else {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      securityCard,
+                      const SizedBox(height: 16),
+                      telemetryGrid,
+                    ],
+                  );
+                }
               },
             ),
 
@@ -316,132 +308,136 @@ class CommandDashboardScreen extends StatelessWidget {
               builder: (context, constraints) {
                 final isWide = constraints.maxWidth >= 700;
 
-                return Flex(
-                  direction: isWide ? Axis.horizontal : Axis.vertical,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Real-Time Audit Ticker
-                    Expanded(
-                      flex: isWide ? 6 : 0,
-                      child: CortexCard(
-                        padding: const EdgeInsets.all(18),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text('RECENT AUDIT STREAM', style: AppTypography.titleMedium),
-                                TextButton(
-                                  onPressed: () => appState.setNavigationIndex(9), // Audit tab
-                                  child: const Text('View All', style: TextStyle(fontSize: 12)),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            ...recentLogs.map((log) {
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 10),
-                                child: Row(
+                final auditStreamCard = CortexCard(
+                  padding: const EdgeInsets.all(18),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text('RECENT AUDIT STREAM', style: AppTypography.titleMedium),
+                          TextButton(
+                            onPressed: () => appState.setNavigationIndex(9), // Audit tab
+                            child: const Text('View All', style: TextStyle(fontSize: 12)),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      ...recentLogs.map((log) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              CortexBadge.auditSeverity(log.severity, isSmall: true),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    CortexBadge.auditSeverity(log.severity, isSmall: true),
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            log.eventType,
-                                            style: const TextStyle(
-                                              fontSize: 12,
-                                              fontWeight: FontWeight.bold,
-                                              fontFamily: 'monospace',
-                                              color: AppColors.textPrimary,
-                                            ),
-                                          ),
-                                          Text(
-                                            log.description,
-                                            style: const TextStyle(
-                                              fontSize: 11,
-                                              color: AppColors.textSecondary,
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ],
+                                    Text(
+                                      log.eventType,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'monospace',
+                                        color: AppColors.textPrimary,
                                       ),
+                                    ),
+                                    Text(
+                                      log.description,
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        color: AppColors.textSecondary,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ],
                                 ),
-                              );
-                            }),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    if (isWide) const SizedBox(width: 16) else const SizedBox(height: 16),
-
-                    // Recent Encrypted Files
-                    Expanded(
-                      flex: isWide ? 4 : 0,
-                      child: CortexCard(
-                        padding: const EdgeInsets.all(18),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text('RECENT PAYLOADS', style: AppTypography.titleMedium),
-                                TextButton(
-                                  onPressed: () => appState.setNavigationIndex(2), // Files tab
-                                  child: const Text('Files', style: TextStyle(fontSize: 12)),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 10),
-                            ...recentFiles.map((file) {
-                              return Container(
-                                margin: const EdgeInsets.only(bottom: 8),
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  color: AppColors.surfaceElevated,
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(color: AppColors.border, width: 0.8),
-                                ),
-                                child: Row(
-                                  children: [
-                                    const Icon(Icons.insert_drive_file_outlined, color: AppColors.primaryLight, size: 20),
-                                    const SizedBox(width: 10),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            file.name,
-                                            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                          Text(
-                                            '${file.formattedSize} • SHA-256',
-                                            style: const TextStyle(fontSize: 10, color: AppColors.textMuted, fontFamily: 'monospace'),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
                 );
+
+                final recentFilesCard = CortexCard(
+                  padding: const EdgeInsets.all(18),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text('RECENT PAYLOADS', style: AppTypography.titleMedium),
+                          TextButton(
+                            onPressed: () => appState.setNavigationIndex(2), // Files tab
+                            child: const Text('Files', style: TextStyle(fontSize: 12)),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      ...recentFiles.map((file) {
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: AppColors.surfaceElevated,
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: AppColors.border, width: 0.8),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.insert_drive_file_outlined, color: AppColors.primaryLight, size: 20),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      file.name,
+                                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    Text(
+                                      '${file.formattedSize} • SHA-256',
+                                      style: const TextStyle(fontSize: 10, color: AppColors.textMuted, fontFamily: 'monospace'),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
+                );
+
+                if (isWide) {
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(flex: 6, child: auditStreamCard),
+                      const SizedBox(width: 16),
+                      Expanded(flex: 4, child: recentFilesCard),
+                    ],
+                  );
+                } else {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      auditStreamCard,
+                      const SizedBox(height: 16),
+                      recentFilesCard,
+                    ],
+                  );
+                }
               },
             ),
           ],

@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:encrypted_p2p/core/state/app_state_provider.dart';
 import 'package:encrypted_p2p/models/call_session_model.dart';
 import 'package:encrypted_p2p/models/file_item_model.dart';
+import 'package:encrypted_p2p/models/security_threat_model.dart';
+import 'package:encrypted_p2p/services/location_service.dart';
 
 void main() {
   group('CORTEX Core State & Feature Tests', () {
@@ -73,20 +75,67 @@ void main() {
       expect(newFile.hashSha256.isNotEmpty, true);
     });
 
-    test('Emergency SOS Activation & Resolution Workflow', () async {
-      await state.login('vanguard', 'pass1234');
+    test('Emergency SOS Activation, Cryptographic Payload & Resolution Workflow', () async {
+      await state.login('alex_vanguard', 'pass1234');
       await state.verifyMfa('123456');
       expect(state.sosService.isSosActive, false);
+
+      // Verify emergency contacts are loaded
+      final contacts = state.personnelService.emergencyContacts;
+      expect(contacts.isNotEmpty, true);
 
       // Activate SOS
       state.triggerSos();
       expect(state.sosService.isSosActive, true);
       expect(state.sosService.activeIncident, isNotNull);
 
-      // Resolve SOS
-      state.resolveSos('Sector clear, all units report green.');
+      final incident = state.sosService.activeIncident!;
+      expect(incident.triggeredByName, contains('Alex'));
+      expect(incident.payload, isNotNull);
+
+      final payload = incident.payload!;
+      expect(payload.cipherSuite, 'AES-256-GCM');
+      expect(payload.payloadHash.startsWith('SHA256:'), true);
+      expect(payload.encryptedData.startsWith('CORTEX-ENC:'), true);
+      expect(payload.emergencyContacts.length, contacts.length);
+      expect(payload.locationPermissionGranted, true);
+      expect(payload.latitude, isNotNull);
+      expect(payload.deviceId.isNotEmpty, true);
+
+      // Check Critical Security Threat creation
+      final sosThreats = state.securityService.threats.where((t) => t.threatType == ThreatType.sosBroadcast);
+      expect(sosThreats.isNotEmpty, true);
+
+      // Resolve SOS with debrief notes
+      state.resolveSos('Sector clear, all tactical units report green.');
       expect(state.sosService.isSosActive, false);
+      expect(state.sosService.activeIncident, isNull);
       expect(state.sosService.sosHistory.length, greaterThan(0));
+
+      final latestHistory = state.sosService.sosHistory.first;
+      expect(latestHistory.resolutionNotes, 'Sector clear, all tactical units report green.');
+      expect(latestHistory.resolvedBy, contains('Alex Morgan'));
+    });
+
+    test('Emergency SOS with Location Permission Denied handles gracefully', () async {
+      await state.login('vanguard', 'pass1234');
+      await state.verifyMfa('123456');
+
+      // Set location permission to denied
+      state.locationService.setPermissionState(LocationPermissionState.denied);
+      expect(state.locationService.hasLocationPermission, false);
+
+      // Trigger SOS without location permission
+      state.triggerSos();
+      expect(state.sosService.isSosActive, true);
+      final payload = state.sosService.activeIncident!.payload!;
+      expect(payload.locationPermissionGranted, false);
+      expect(payload.latitude, isNull);
+      expect(payload.longitude, isNull);
+      expect(payload.locationStatus, contains('Denied'));
+
+      state.cancelSos();
+      expect(state.sosService.isSosActive, false);
     });
 
     test('Live Location Sharing Policy & Emergency Stop', () {

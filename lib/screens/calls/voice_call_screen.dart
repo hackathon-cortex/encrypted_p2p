@@ -34,18 +34,6 @@ class _VoiceCallScreenState extends State<VoiceCallScreen> {
       appBar: CortexAppBar(
         title: 'SECURE COMMUNICATIONS',
         subtitle: 'SRTP-AES-GCM-256 • ZERO-LOG CALLING',
-        leading: Builder(
-          builder: (ctx) {
-            final isMobile = MediaQuery.of(context).size.width < 800;
-            if (isMobile) {
-              return IconButton(
-                icon: const Icon(Icons.menu_rounded, color: AppColors.textPrimary),
-                onPressed: () => Scaffold.of(ctx).openDrawer(),
-              );
-            }
-            return const SizedBox.shrink();
-          },
-        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),

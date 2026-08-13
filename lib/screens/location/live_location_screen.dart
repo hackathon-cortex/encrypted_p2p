@@ -28,18 +28,6 @@ class _LiveLocationScreenState extends State<LiveLocationScreen> {
       appBar: CortexAppBar(
         title: 'TACTICAL LIVE LOCATION',
         subtitle: 'ENCRYPTED GEOLOCATION MESH • ZERO-CLOUD',
-        leading: Builder(
-          builder: (ctx) {
-            final isMobile = MediaQuery.of(context).size.width < 800;
-            if (isMobile) {
-              return IconButton(
-                icon: const Icon(Icons.menu_rounded, color: AppColors.textPrimary),
-                onPressed: () => Scaffold.of(ctx).openDrawer(),
-              );
-            }
-            return const SizedBox.shrink();
-          },
-        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -119,76 +107,80 @@ class _LiveLocationScreenState extends State<LiveLocationScreen> {
               builder: (context, constraints) {
                 final isWide = constraints.maxWidth >= 700;
 
-                return Flex(
-                  direction: isWide ? Axis.horizontal : Axis.vertical,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Coordinates Details
-                    Expanded(
-                      flex: isWide ? 6 : 0,
-                      child: CortexCard(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('TACTICAL GPS TELEMETRY', style: AppTypography.titleMedium),
-                            const SizedBox(height: 12),
-                            _CoordRow(label: 'LATITUDE', value: '${myLoc.latitude.toStringAsFixed(6)}° N'),
-                            _CoordRow(label: 'LONGITUDE', value: '${myLoc.longitude.toStringAsFixed(6)}° W'),
-                            _CoordRow(label: 'ACCURACY', value: '±${myLoc.accuracyMeters} meters (GPS + GLONASS)'),
-                            _CoordRow(label: 'ALTITUDE', value: '${myLoc.altitude}m MSL'),
-                            _CoordRow(label: 'SECTOR ZONE', value: myLoc.sector),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    if (isWide) const SizedBox(width: 16) else const SizedBox(height: 16),
-
-                    // Privacy Controls & Audience Selection
-                    Expanded(
-                      flex: isWide ? 4 : 0,
-                      child: CortexCard(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text('BROADCAST AUDIENCE', style: AppTypography.titleMedium),
-                            const SizedBox(height: 10),
-                            ...['Squadron Alpha', 'Command Only', 'Emergency Units'].map((aud) {
-                              return ListTile(
-                                dense: true,
-                                contentPadding: EdgeInsets.zero,
-                                leading: Icon(
-                                  audience == aud ? Icons.radio_button_checked : Icons.radio_button_off,
-                                  color: audience == aud ? AppColors.primaryLight : AppColors.textMuted,
-                                  size: 20,
-                                ),
-                                title: Text(aud, style: const TextStyle(fontSize: 13, color: AppColors.textPrimary)),
-                                onTap: isSharing
-                                    ? () {
-                                        appState.locationService.setSharingAudience(aud);
-                                        setState(() {});
-                                      }
-                                    : null,
-                              );
-                            }),
-                            const SizedBox(height: 10),
-                            if (isSharing)
-                              CortexButton.destructive(
-                                text: 'EMERGENCY STOP SHARING',
-                                icon: Icons.location_off_rounded,
-                                isSmall: true,
-                                onPressed: () {
-                                  appState.emergencyStopLocationSharing();
-                                },
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
+                final coordsCard = CortexCard(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('TACTICAL GPS TELEMETRY', style: AppTypography.titleMedium),
+                      const SizedBox(height: 12),
+                      _CoordRow(label: 'LATITUDE', value: '${myLoc.latitude.toStringAsFixed(6)}° N'),
+                      _CoordRow(label: 'LONGITUDE', value: '${myLoc.longitude.toStringAsFixed(6)}° W'),
+                      _CoordRow(label: 'ACCURACY', value: '±${myLoc.accuracyMeters} meters (GPS + GLONASS)'),
+                      _CoordRow(label: 'ALTITUDE', value: '${myLoc.altitude}m MSL'),
+                      _CoordRow(label: 'SECTOR ZONE', value: myLoc.sector),
+                    ],
+                  ),
                 );
+
+                final audienceCard = CortexCard(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('BROADCAST AUDIENCE', style: AppTypography.titleMedium),
+                      const SizedBox(height: 10),
+                      ...['Squadron Alpha', 'Command Only', 'Emergency Units'].map((aud) {
+                        return ListTile(
+                          dense: true,
+                          contentPadding: EdgeInsets.zero,
+                          leading: Icon(
+                            audience == aud ? Icons.radio_button_checked : Icons.radio_button_off,
+                            color: audience == aud ? AppColors.primaryLight : AppColors.textMuted,
+                            size: 20,
+                          ),
+                          title: Text(aud, style: const TextStyle(fontSize: 13, color: AppColors.textPrimary)),
+                          onTap: isSharing
+                              ? () {
+                                  appState.locationService.setSharingAudience(aud);
+                                  setState(() {});
+                                }
+                              : null,
+                        );
+                      }),
+                      const SizedBox(height: 10),
+                      if (isSharing)
+                        CortexButton.destructive(
+                          text: 'EMERGENCY STOP SHARING',
+                          icon: Icons.location_off_rounded,
+                          isSmall: true,
+                          onPressed: () {
+                            appState.emergencyStopLocationSharing();
+                          },
+                        ),
+                    ],
+                  ),
+                );
+
+                if (isWide) {
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(flex: 6, child: coordsCard),
+                      const SizedBox(width: 16),
+                      Expanded(flex: 4, child: audienceCard),
+                    ],
+                  );
+                } else {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      coordsCard,
+                      const SizedBox(height: 16),
+                      audienceCard,
+                    ],
+                  );
+                }
               },
             ),
 

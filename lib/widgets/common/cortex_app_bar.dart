@@ -58,6 +58,16 @@ class CortexAppBar extends StatelessWidget implements PreferredSizeWidget {
                     color: AppColors.textPrimary,
                   ),
                   tooltip: 'Back',
+                )
+              else if (MediaQuery.of(context).size.width < 800)
+                IconButton(
+                  onPressed: () => appState.openDrawer(),
+                  icon: const Icon(
+                    Icons.menu_rounded,
+                    color: AppColors.textPrimary,
+                    size: 22,
+                  ),
+                  tooltip: 'Navigation Menu',
                 ),
 
               const SizedBox(width: 4),

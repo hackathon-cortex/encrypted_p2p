@@ -23,21 +23,38 @@ import 'app_routes.dart';
 class MainNavigationShell extends StatelessWidget {
   const MainNavigationShell({super.key});
 
-  static const List<Widget> _screens = [
-    CommandDashboardScreen(),    // 0
-    ChatScreen(),                // 1
-    FileShareScreen(),           // 2
-    VoiceCallScreen(),           // 3
-    SecurityCenterScreen(),      // 4
-    PersonnelScreen(),           // 5
-    LiveLocationScreen(),        // 6
-    SosScreen(),                 // 7
-    AiAssistantScreen(),         // 8
-    AuditLogsScreen(),           // 9
-    NotificationCenterScreen(),  // 10
-    DeviceManagementScreen(),    // 11
-    SettingsScreen(),            // 12
-  ];
+  Widget _buildScreen(int index) {
+    switch (index) {
+      case 0:
+        return const CommandDashboardScreen();
+      case 1:
+        return const ChatScreen();
+      case 2:
+        return const FileShareScreen();
+      case 3:
+        return const VoiceCallScreen();
+      case 4:
+        return const SecurityCenterScreen();
+      case 5:
+        return const PersonnelScreen();
+      case 6:
+        return const LiveLocationScreen();
+      case 7:
+        return const SosScreen();
+      case 8:
+        return const AiAssistantScreen();
+      case 9:
+        return const AuditLogsScreen();
+      case 10:
+        return const NotificationCenterScreen();
+      case 11:
+        return const DeviceManagementScreen();
+      case 12:
+        return const SettingsScreen();
+      default:
+        return const CommandDashboardScreen();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -51,10 +68,11 @@ class MainNavigationShell extends StatelessWidget {
       return const Scaffold(backgroundColor: AppColors.background);
     }
 
-    final selectedIndex = appState.selectedNavigationIndex.clamp(0, _screens.length - 1);
+    final selectedIndex = appState.selectedNavigationIndex.clamp(0, 12);
     final isDesktop = MediaQuery.of(context).size.width >= 800;
 
     return Scaffold(
+      key: appState.rootScaffoldKey,
       backgroundColor: AppColors.background,
       drawer: isDesktop
           ? null
@@ -75,10 +93,7 @@ class MainNavigationShell extends StatelessWidget {
 
               // Active Screen View
               Expanded(
-                child: IndexedStack(
-                  index: selectedIndex,
-                  children: _screens,
-                ),
+                child: _buildScreen(selectedIndex),
               ),
             ],
           ),

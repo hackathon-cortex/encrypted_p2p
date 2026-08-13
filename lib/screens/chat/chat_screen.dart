@@ -110,18 +110,6 @@ class _ChatScreenState extends State<ChatScreen> {
       appBar: CortexAppBar(
         title: 'SECURE CHAT',
         subtitle: 'AES-256-GCM • DECENTRALIZED P2P RELAY',
-        leading: Builder(
-          builder: (ctx) {
-            final isMobile = MediaQuery.of(context).size.width < 800;
-            if (isMobile) {
-              return IconButton(
-                icon: const Icon(Icons.menu_rounded, color: AppColors.textPrimary),
-                onPressed: () => Scaffold.of(ctx).openDrawer(),
-              );
-            }
-            return const SizedBox.shrink();
-          },
-        ),
       ),
       body: Row(
         children: [
