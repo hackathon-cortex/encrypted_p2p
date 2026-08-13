@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/theme/app_colors.dart';
 
 class MessageInput extends StatefulWidget {
   final ValueChanged<String>? onSend;
@@ -45,11 +46,11 @@ class _MessageInputState extends State<MessageInput> {
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 8, 12, 10),
       decoration: const BoxDecoration(
-        color: Color(0xFF0B0F14),
+        color: AppColors.surface,
         border: Border(
           top: BorderSide(
-            color: Color(0xFF202631),
-            width: 0.7,
+            color: AppColors.border,
+            width: 1.0,
           ),
         ),
       ),
@@ -60,7 +61,7 @@ class _MessageInputState extends State<MessageInput> {
             onPressed: widget.onAttachment,
             icon: const Icon(
               Icons.attach_file_rounded,
-              color: Color(0xFF9AA4B2),
+              color: AppColors.textSecondary,
             ),
             tooltip: 'Attach file',
           ),
@@ -71,8 +72,9 @@ class _MessageInputState extends State<MessageInput> {
                 maxHeight: 120,
               ),
               decoration: BoxDecoration(
-                color: const Color(0xFF151B24),
+                color: AppColors.surfaceElevated,
                 borderRadius: BorderRadius.circular(15),
+                border: Border.all(color: AppColors.border, width: 1),
               ),
               child: TextField(
                 controller: _controller,
@@ -82,13 +84,13 @@ class _MessageInputState extends State<MessageInput> {
                 textInputAction: TextInputAction.newline,
                 onChanged: (_) => setState(() {}),
                 style: const TextStyle(
-                  color: Colors.white,
+                  color: AppColors.textPrimary,
                   fontSize: 15,
                 ),
                 decoration: const InputDecoration(
                   hintText: 'Type a message...',
                   hintStyle: TextStyle(
-                    color: Color(0xFF687385),
+                    color: AppColors.textMuted,
                     fontSize: 15,
                   ),
                   border: InputBorder.none,
@@ -102,7 +104,7 @@ class _MessageInputState extends State<MessageInput> {
           ),
           const SizedBox(width: 6),
           Material(
-            color: const Color(0xFF6C63FF),
+            color: AppColors.primary,
             borderRadius: BorderRadius.circular(14),
             child: InkWell(
               onTap: _hasText ? _sendMessage : widget.onVoice,

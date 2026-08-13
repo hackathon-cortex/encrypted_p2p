@@ -243,7 +243,14 @@ class _PersonnelScreenState extends State<PersonnelScreen> {
                           children: [
                             Row(
                               children: [
-                                Text(person.fullName, style: AppTypography.titleMedium),
+                                Flexible(
+                                  child: Text(
+                                    person.fullName,
+                                    style: AppTypography.titleMedium,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
                                 if (person.isEmergencyContact) ...[
                                   const SizedBox(width: 6),
                                   const Icon(Icons.shield_rounded, size: 14, color: AppColors.critical),

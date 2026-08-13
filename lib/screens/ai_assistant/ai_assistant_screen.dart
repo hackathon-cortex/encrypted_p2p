@@ -271,7 +271,11 @@ class _AiMessageBubble extends StatelessWidget {
                     ),
                     child: Text(
                       message.text,
-                      style: const TextStyle(color: Colors.white, fontSize: 13, height: 1.4),
+                      style: TextStyle(
+                        color: isUser ? Colors.white : AppColors.textPrimary,
+                        fontSize: 13,
+                        height: 1.4,
+                      ),
                     ),
                   ),
                   if (message.actionButtons != null && message.actionButtons!.isNotEmpty) ...[

@@ -170,8 +170,8 @@ class _DrawerTile extends StatelessWidget {
 
     if (isSelected) {
       tileBg = isEmergency ? AppColors.critical.withValues(alpha: 0.15) : AppColors.primary.withValues(alpha: 0.15);
-      iconColor = isEmergency ? AppColors.critical : AppColors.primaryLight;
-      textColor = isEmergency ? AppColors.critical : AppColors.white;
+      iconColor = isEmergency ? AppColors.critical : AppColors.primary;
+      textColor = isEmergency ? AppColors.critical : AppColors.primary;
     }
 
     return Container(

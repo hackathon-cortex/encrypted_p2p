@@ -46,11 +46,11 @@ class MobileBottomNavigation extends StatelessWidget {
               final isEmergency = item.isEmergency;
 
               Color iconColor = isSelected
-                  ? (isEmergency ? AppColors.critical : AppColors.primaryLight)
+                  ? (isEmergency ? AppColors.critical : AppColors.primary)
                   : (isEmergency ? AppColors.critical : AppColors.textMuted);
 
               Color textColor = isSelected
-                  ? (isEmergency ? AppColors.critical : AppColors.primaryLight)
+                  ? (isEmergency ? AppColors.critical : AppColors.primary)
                   : (isEmergency ? AppColors.critical : AppColors.textMuted);
 
               return Expanded(

@@ -270,8 +270,8 @@ class _SidebarTile extends StatelessWidget {
 
     if (isSelected) {
       tileBg = isSos ? AppColors.critical.withValues(alpha: 0.15) : AppColors.primary.withValues(alpha: 0.15);
-      iconColor = isSos ? AppColors.critical : AppColors.primaryLight;
-      textColor = isSos ? AppColors.critical : AppColors.white;
+      iconColor = isSos ? AppColors.critical : AppColors.primary;
+      textColor = isSos ? AppColors.critical : AppColors.primary;
     } else if (isSos) {
       iconColor = AppColors.critical;
       textColor = AppColors.critical;

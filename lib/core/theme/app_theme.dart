@@ -3,19 +3,19 @@ import 'app_colors.dart';
 import 'app_typography.dart';
 
 class AppTheme {
-  static ThemeData get darkTheme {
+  static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
-      brightness: Brightness.dark,
+      brightness: Brightness.light,
       scaffoldBackgroundColor: AppColors.background,
       primaryColor: AppColors.primary,
-      colorScheme: const ColorScheme.dark(
+      colorScheme: const ColorScheme.light(
         primary: AppColors.primary,
-        secondary: AppColors.accentCyan,
+        secondary: AppColors.primaryLight,
         surface: AppColors.surface,
         error: AppColors.error,
         onPrimary: AppColors.white,
-        onSecondary: AppColors.black,
+        onSecondary: AppColors.white,
         onSurface: AppColors.textPrimary,
         onError: AppColors.white,
       ),
@@ -53,7 +53,7 @@ class AppTheme {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.primaryLight, width: 1.5),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -81,7 +81,7 @@ class AppTheme {
           foregroundColor: AppColors.textPrimary,
           elevation: 0,
           minimumSize: const Size.fromHeight(48),
-          side: const BorderSide(color: AppColors.borderLight, width: 1),
+          side: const BorderSide(color: AppColors.border, width: 1),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -102,4 +102,6 @@ class AppTheme {
       ),
     );
   }
+
+  static ThemeData get darkTheme => lightTheme;
 }

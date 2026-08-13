@@ -46,6 +46,7 @@ class _AudioWaveVisualizerState extends State<AudioWaveVisualizer> with SingleTi
         return SizedBox(
           height: widget.height,
           child: Row(
+            mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: List.generate(widget.barCount, (index) {

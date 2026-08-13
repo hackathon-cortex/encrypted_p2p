@@ -131,66 +131,85 @@ class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
   void _showCancelConfirmationDialog() {
     final notesController = TextEditingController(text: 'Situation secured. Tactical perimeter stabilized.');
 
-    CortexModal.showBottomSheet(
+    showDialog(
       context: context,
-      title: 'CANCEL SOS / STAND DOWN',
-      subtitle: 'Confirmation required to stand down distress beacon',
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.warning.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.warning.withValues(alpha: 0.4), width: 1),
-            ),
-            child: const Row(
+      builder: (dialogContext) {
+        return AlertDialog(
+          backgroundColor: AppColors.surface,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: const BorderSide(color: AppColors.border, width: 1),
+          ),
+          title: const Text('CANCEL SOS / STAND DOWN', style: AppTypography.titleMedium),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Icon(Icons.warning_amber_rounded, color: AppColors.warning, size: 22),
-                SizedBox(width: 10),
-                Expanded(
-                  child: Text(
-                    'Cancelling will stand down distress broadcasting to all emergency contacts and mesh peers.',
-                    style: TextStyle(color: AppColors.textPrimary, fontSize: 12),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.warning.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: AppColors.warning.withValues(alpha: 0.4), width: 1),
                   ),
+                  child: const Row(
+                    children: [
+                      Icon(Icons.warning_amber_rounded, color: AppColors.warning, size: 22),
+                      SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Cancelling will stand down distress broadcasting to all emergency contacts and mesh peers.',
+                          style: TextStyle(color: AppColors.textPrimary, fontSize: 12),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                CortexTextField(
+                  controller: notesController,
+                  labelText: 'DEBRIEF & RESOLUTION NOTES',
+                  hintText: 'Enter incident resolution summary...',
+                  maxLines: 2,
                 ),
               ],
             ),
           ),
-          const SizedBox(height: 16),
-          CortexTextField(
-            controller: notesController,
-            labelText: 'DEBRIEF & RESOLUTION NOTES',
-            hintText: 'Enter incident resolution summary...',
-            maxLines: 3,
-          ),
-          const SizedBox(height: 20),
-          Row(
-            children: [
-              Expanded(
-                child: CortexButton.outline(
-                  text: 'KEEP ACTIVE',
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: CortexButton.destructive(
-                  text: 'CONFIRM CANCEL',
-                  icon: Icons.check_circle_outline_rounded,
-                  onPressed: () {
-                    Navigator.pop(context);
-                    final appState = AppStateProvider.of(context);
-                    appState.resolveSos(notesController.text.trim());
-                    _elapsedTimer?.cancel();
-                  },
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('KEEP ACTIVE', style: TextStyle(color: AppColors.textMuted)),
+            ),
+            CortexButton.destructive(
+              text: 'CONFIRM STAND DOWN',
+              isSmall: true,
+              icon: Icons.check_circle_outline_rounded,
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+                final appState = AppStateProvider.of(context);
+                final notes = notesController.text.trim().isNotEmpty
+                    ? notesController.text.trim()
+                    : 'Situation secured. Distress beacon stood down.';
+                appState.resolveSos(notes);
+                _elapsedTimer?.cancel();
+                _pulseController.stop();
+                setState(() {
+                  _isHolding = false;
+                  _holdProgress = 0.0;
+                });
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Emergency SOS stood down and incident logged to audit ledger.'),
+                    backgroundColor: AppColors.success,
+                    duration: Duration(seconds: 3),
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -262,7 +281,7 @@ class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
     }
 
     return Scaffold(
-      backgroundColor: isSosActive ? const Color(0xFF14080B) : AppColors.background,
+      backgroundColor: isSosActive ? const Color(0xFFFDEDED) : AppColors.background,
       appBar: CortexAppBar(
         title: 'EMERGENCY SOS',
         subtitle: isSosActive ? '🚨 DISTRESS BEACON ACTIVE • BROADCASTING' : 'TACTICAL DISTRESS BEACON • P2P MESH',
@@ -641,20 +660,13 @@ class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
                         width: _isHolding ? 154 : 164,
                         height: _isHolding ? 154 : 164,
                         decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              Color(0xFFDC2626),
-                              Color(0xFF991B1B),
-                            ],
-                          ),
+                          color: AppColors.critical,
                           shape: BoxShape.circle,
                           boxShadow: [
                             BoxShadow(
-                              color: AppColors.critical.withValues(alpha: _isHolding ? 0.75 : 0.4),
-                              blurRadius: _isHolding ? 36 : 20,
-                              spreadRadius: _isHolding ? 8 : 2,
+                              color: AppColors.critical.withValues(alpha: _isHolding ? 0.6 : 0.3),
+                              blurRadius: _isHolding ? 28 : 16,
+                              spreadRadius: _isHolding ? 6 : 2,
                               offset: const Offset(0, 4),
                             ),
                           ],
@@ -730,7 +742,14 @@ class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('DESIGNATED EMERGENCY CONTACTS', style: AppTypography.titleMedium),
+                        const Expanded(
+                          child: Text(
+                            'DESIGNATED EMERGENCY CONTACTS',
+                            style: AppTypography.titleMedium,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
                         TextButton(
                           onPressed: () => appState.setNavigationIndex(5), // Personnel tab
                           child: const Text('Manage', style: TextStyle(fontSize: 12)),
@@ -795,10 +814,15 @@ class _SosScreenState extends State<SosScreen> with TickerProviderStateMixin {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                'INCIDENT: ${item.callsign} (${item.triggeredByName})',
-                                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textPrimary),
+                              Expanded(
+                                child: Text(
+                                  'INCIDENT: ${item.callsign} (${item.triggeredByName})',
+                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: AppColors.textPrimary),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
+                              const SizedBox(width: 8),
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                                 decoration: BoxDecoration(

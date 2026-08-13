@@ -282,7 +282,7 @@ class _ActiveCallInterface extends StatelessWidget {
     final isRinging = call.state == CallState.outgoingRinging;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF06090E),
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: Column(
           children: [

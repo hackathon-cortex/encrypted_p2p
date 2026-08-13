@@ -16,7 +16,6 @@ class SecurityCenterScreen extends StatefulWidget {
 }
 
 class _SecurityCenterScreenState extends State<SecurityCenterScreen> {
-
   @override
   Widget build(BuildContext context) {
     final appState = AppStateProvider.of(context);
@@ -27,10 +26,87 @@ class _SecurityCenterScreenState extends State<SecurityCenterScreen> {
     final isScanning = appState.securityService.isScanning;
     final scanProgress = appState.securityService.scanProgress;
     final failedLogins = appState.securityService.failedLoginAttempts;
+    final isWide = MediaQuery.of(context).size.width >= 700;
+
+    final scoreCard = CortexCard(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        children: [
+          SecurityGauge(
+            score: securityScore,
+            statusText: statusText,
+            size: 140,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Last full scan: ${appState.securityService.lastScanTime.hour.toString().padLeft(2, "0")}:${appState.securityService.lastScanTime.minute.toString().padLeft(2, "0")}',
+            style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
+          ),
+          const SizedBox(height: 12),
+          if (isScanning) ...[
+            LinearProgressIndicator(
+              value: scanProgress,
+              backgroundColor: AppColors.surfaceElevated,
+              color: AppColors.primary,
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'SCANNING RELAY NODES... ${(scanProgress * 100).toInt()}%',
+              style: const TextStyle(color: AppColors.primaryDark, fontSize: 10, fontFamily: 'monospace'),
+            ),
+          ] else ...[
+            CortexButton(
+              text: 'RUN FULL PERIMETER SCAN',
+              icon: Icons.radar_rounded,
+              isSmall: true,
+              onPressed: () {
+                appState.runSecurityScan();
+              },
+            ),
+          ],
+        ],
+      ),
+    );
+
+    final breakdown = Column(
+      children: [
+        _SecuritySpecCard(
+          icon: Icons.vpn_key_rounded,
+          title: 'ASYMMETRIC CIPHER SUITE',
+          value: 'AES-256-GCM + Curve25519 (ECDH)',
+          status: 'HARDENED',
+          statusColor: AppColors.success,
+        ),
+        const SizedBox(height: 10),
+        _SecuritySpecCard(
+          icon: Icons.hub_rounded,
+          title: 'P2P MESH NODE RELAY',
+          value: '${appState.webSocketService.connectedPeersCount} Relays Connected • Zero-Trust Policy',
+          status: 'SYNCHRONIZED',
+          statusColor: AppColors.success,
+        ),
+        const SizedBox(height: 10),
+        _SecuritySpecCard(
+          icon: Icons.lock_person_rounded,
+          title: 'FAILED AUTH CHALLENGES',
+          value: '$failedLogins Invalid attempts recorded',
+          status: failedLogins > 0 ? 'ALERT' : 'SECURE',
+          statusColor: failedLogins > 0 ? AppColors.warning : AppColors.success,
+        ),
+        const SizedBox(height: 10),
+        _SecuritySpecCard(
+          icon: Icons.fingerprint_rounded,
+          title: 'IDENTITY & BIOMETRICS',
+          value: 'Hardware Biometric + TOTP 2FA Required',
+          status: 'ACTIVE',
+          statusColor: AppColors.success,
+        ),
+      ],
+    );
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: CortexAppBar(
+      appBar: const CortexAppBar(
         title: 'SECURITY CENTER',
         subtitle: 'PERIMETER DEFENSE • REAL-TIME THREAT RADAR',
       ),
@@ -40,107 +116,24 @@ class _SecurityCenterScreenState extends State<SecurityCenterScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Top Section: Security Score & Scan trigger
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final isWide = constraints.maxWidth >= 700;
-
-                final scoreCard = CortexCard(
-                  padding: const EdgeInsets.all(20),
-                  child: Column(
-                    children: [
-                      SecurityGauge(
-                        score: securityScore,
-                        statusText: statusText,
-                        size: 140,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Last full scan: ${appState.securityService.lastScanTime.hour.toString().padLeft(2, "0")}:${appState.securityService.lastScanTime.minute.toString().padLeft(2, "0")}',
-                        style: const TextStyle(color: AppColors.textMuted, fontSize: 11),
-                      ),
-                      const SizedBox(height: 12),
-                      if (isScanning) ...[
-                        LinearProgressIndicator(
-                          value: scanProgress,
-                          backgroundColor: AppColors.surfaceElevated,
-                          color: AppColors.primaryLight,
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          'SCANNING RELAY NODES... ${(scanProgress * 100).toInt()}%',
-                          style: const TextStyle(color: AppColors.accentCyan, fontSize: 10, fontFamily: 'monospace'),
-                        ),
-                      ] else ...[
-                        CortexButton(
-                          text: 'RUN FULL PERIMETER SCAN',
-                          icon: Icons.radar_rounded,
-                          isSmall: true,
-                          onPressed: () {
-                            appState.runSecurityScan();
-                          },
-                        ),
-                      ],
-                    ],
-                  ),
-                );
-
-                final breakdown = Column(
-                  children: [
-                    _SecuritySpecCard(
-                      icon: Icons.vpn_key_rounded,
-                      title: 'ASYMMETRIC CIPHER SUITE',
-                      value: 'AES-256-GCM + Curve25519 (ECDH)',
-                      status: 'HARDENED',
-                      statusColor: AppColors.success,
-                    ),
-                    const SizedBox(height: 10),
-                    _SecuritySpecCard(
-                      icon: Icons.hub_rounded,
-                      title: 'P2P MESH NODE RELAY',
-                      value: '${appState.webSocketService.connectedPeersCount} Relays Connected • Zero-Trust Policy',
-                      status: 'SYNCHRONIZED',
-                      statusColor: AppColors.success,
-                    ),
-                    const SizedBox(height: 10),
-                    _SecuritySpecCard(
-                      icon: Icons.lock_person_rounded,
-                      title: 'FAILED AUTH CHALLENGES',
-                      value: '$failedLogins Invalid attempts recorded',
-                      status: failedLogins > 0 ? 'ALERT' : 'SECURE',
-                      statusColor: failedLogins > 0 ? AppColors.warning : AppColors.success,
-                    ),
-                    const SizedBox(height: 10),
-                    _SecuritySpecCard(
-                      icon: Icons.fingerprint_rounded,
-                      title: 'IDENTITY & BIOMETRICS',
-                      value: 'Hardware Biometric + TOTP 2FA Required',
-                      status: 'ACTIVE',
-                      statusColor: AppColors.success,
-                    ),
-                  ],
-                );
-
-                if (isWide) {
-                  return Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(flex: 4, child: scoreCard),
-                      const SizedBox(width: 16),
-                      Expanded(flex: 6, child: breakdown),
-                    ],
-                  );
-                } else {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      scoreCard,
-                      const SizedBox(height: 16),
-                      breakdown,
-                    ],
-                  );
-                }
-              },
-            ),
+            if (isWide)
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(flex: 4, child: scoreCard),
+                  const SizedBox(width: 16),
+                  Expanded(flex: 6, child: breakdown),
+                ],
+              )
+            else
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  scoreCard,
+                  const SizedBox(height: 16),
+                  breakdown,
+                ],
+              ),
 
             const SizedBox(height: 28),
 
@@ -148,26 +141,35 @@ class _SecurityCenterScreenState extends State<SecurityCenterScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    const Text('ACTIVE THREAT MONITOR', style: AppTypography.titleMedium),
-                    const SizedBox(width: 10),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: activeThreats.isNotEmpty ? AppColors.warning.withValues(alpha: 0.2) : AppColors.success.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        '${activeThreats.length} THREATS',
-                        style: TextStyle(
-                          color: activeThreats.isNotEmpty ? AppColors.warning : AppColors.success,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
+                Expanded(
+                  child: Row(
+                    children: [
+                      const Flexible(
+                        child: Text(
+                          'ACTIVE THREAT MONITOR',
+                          style: AppTypography.titleMedium,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: activeThreats.isNotEmpty ? AppColors.warning.withValues(alpha: 0.2) : AppColors.success.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '${activeThreats.length} THREATS',
+                          style: TextStyle(
+                            color: activeThreats.isNotEmpty ? AppColors.warning : AppColors.success,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 TextButton.icon(
                   onPressed: () {
@@ -192,7 +194,7 @@ class _SecurityCenterScreenState extends State<SecurityCenterScreen> {
                       const SizedBox(height: 10),
                       const Text('Perimeter Secure', style: AppTypography.titleMedium),
                       const SizedBox(height: 4),
-                      Text('No active threats or quarantined relays detected.', style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
+                      const Text('No active threats or quarantined relays detected.', style: TextStyle(color: AppColors.textMuted, fontSize: 12)),
                     ],
                   ),
                 ),
@@ -256,64 +258,75 @@ class _SecurityCenterScreenState extends State<SecurityCenterScreen> {
 
             CortexCard(
               padding: const EdgeInsets.all(16),
-              child: Column(
-                children: allThreats.map((item) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 14),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          width: 10,
-                          height: 10,
-                          margin: const EdgeInsets.only(top: 4),
-                          decoration: BoxDecoration(
-                            color: item.isResolved ? AppColors.success : AppColors.warning,
-                            shape: BoxShape.circle,
-                          ),
+              child: allThreats.isEmpty
+                  ? const Padding(
+                      padding: EdgeInsets.all(12),
+                      child: Center(
+                        child: Text(
+                          'No security events recorded in ledger.',
+                          style: TextStyle(color: AppColors.textMuted, fontSize: 12),
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
+                      ),
+                    )
+                  : Column(
+                      children: allThreats.map((item) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 14),
+                          child: Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      item.title,
-                                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
-                                    ),
-                                  ),
-                                  Text(
-                                    item.isResolved ? 'RESOLVED' : 'ACTIVE',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      color: item.isResolved ? AppColors.success : AppColors.warning,
-                                      fontFamily: 'monospace',
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 2),
-                              Text(item.description, style: AppTypography.bodySmall),
-                              if (item.resolutionAction != null) ...[
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Action: ${item.resolutionAction}',
-                                  style: const TextStyle(color: AppColors.accentCyan, fontSize: 11),
+                              Container(
+                                width: 10,
+                                height: 10,
+                                margin: const EdgeInsets.only(top: 4),
+                                decoration: BoxDecoration(
+                                  color: item.isResolved ? AppColors.success : AppColors.warning,
+                                  shape: BoxShape.circle,
                                 ),
-                              ],
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            item.title,
+                                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: AppColors.textPrimary),
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          item.isResolved ? 'RESOLVED' : 'ACTIVE',
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                            color: item.isResolved ? AppColors.success : AppColors.warning,
+                                            fontFamily: 'monospace',
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(item.description, style: AppTypography.bodySmall),
+                                    if (item.resolutionAction != null) ...[
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Action: ${item.resolutionAction}',
+                                        style: const TextStyle(color: AppColors.primaryDark, fontSize: 11),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
                             ],
                           ),
-                        ),
-                      ],
+                        );
+                      }).toList(),
                     ),
-                  );
-                }).toList(),
-              ),
             ),
           ],
         ),
@@ -351,7 +364,7 @@ class _SecuritySpecCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: AppColors.border, width: 0.8),
             ),
-            child: Icon(icon, color: AppColors.primaryLight, size: 18),
+            child: Icon(icon, color: AppColors.primary, size: 18),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -375,6 +388,7 @@ class _SecuritySpecCard extends StatelessWidget {
               ],
             ),
           ),
+          const SizedBox(width: 8),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(

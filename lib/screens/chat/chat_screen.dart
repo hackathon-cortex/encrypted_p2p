@@ -320,13 +320,20 @@ class _ChatScreenState extends State<ChatScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Row(
-                                  children: [
-                                    Text(activeConvo.title, style: AppTypography.titleMedium),
-                                    const SizedBox(width: 8),
-                                    CortexBadge.encrypted(isSmall: true),
-                                  ],
-                                ),
+                                 Row(
+                                   children: [
+                                     Flexible(
+                                       child: Text(
+                                         activeConvo.title,
+                                         style: AppTypography.titleMedium,
+                                         maxLines: 1,
+                                         overflow: TextOverflow.ellipsis,
+                                       ),
+                                     ),
+                                     const SizedBox(width: 8),
+                                     CortexBadge.encrypted(isSmall: true),
+                                   ],
+                                 ),
                                 Text(
                                   activeConvo.subtitle ?? 'End-to-End Encrypted',
                                   style: AppTypography.bodySmall,
@@ -478,7 +485,7 @@ class _ChatScreenState extends State<ChatScreen> {
                                   children: [
                                     Text('RECORDING...', style: TextStyle(color: AppColors.error, fontSize: 12, fontWeight: FontWeight.bold)),
                                     SizedBox(width: 12),
-                                    Expanded(child: AudioWaveVisualizer(barCount: 16, height: 24, barColor: AppColors.error)),
+                                    AudioWaveVisualizer(barCount: 16, height: 24, barColor: AppColors.error),
                                   ],
                                 ),
                               ),
@@ -640,13 +647,16 @@ class _MessageBubble extends StatelessWidget {
                       padding: const EdgeInsets.all(8),
                       margin: const EdgeInsets.only(bottom: 8),
                       decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.2),
+                        color: isMe ? Colors.black.withValues(alpha: 0.15) : AppColors.surfaceLight,
                         borderRadius: BorderRadius.circular(6),
-                        border: const Border(left: BorderSide(color: AppColors.accentCyan, width: 3)),
+                        border: Border(left: BorderSide(color: isMe ? Colors.white70 : AppColors.primary, width: 3)),
                       ),
                       child: Text(
                         message.replyToText!,
-                        style: const TextStyle(fontSize: 11, color: Colors.white70),
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: isMe ? Colors.white70 : AppColors.textSecondary,
+                        ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -659,12 +669,12 @@ class _MessageBubble extends StatelessWidget {
                       padding: const EdgeInsets.all(8),
                       margin: const EdgeInsets.only(bottom: 8),
                       decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.25),
+                        color: isMe ? Colors.black.withValues(alpha: 0.15) : AppColors.surfaceLight,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.insert_drive_file_rounded, color: AppColors.accentCyan, size: 24),
+                          Icon(Icons.insert_drive_file_rounded, color: isMe ? Colors.white : AppColors.primary, size: 24),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Column(
@@ -672,13 +682,20 @@ class _MessageBubble extends StatelessWidget {
                               children: [
                                 Text(
                                   message.attachmentName ?? 'Payload.enc',
-                                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                                  style: TextStyle(
+                                    color: isMe ? Colors.white : AppColors.textPrimary,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 Text(
                                   '${message.attachmentSize ?? "2.4 MB"} • E2EE Encrypted',
-                                  style: const TextStyle(color: Colors.white60, fontSize: 10),
+                                  style: TextStyle(
+                                    color: isMe ? Colors.white70 : AppColors.textSecondary,
+                                    fontSize: 10,
+                                  ),
                                 ),
                               ],
                             ),
@@ -691,16 +708,23 @@ class _MessageBubble extends StatelessWidget {
                       padding: const EdgeInsets.all(8),
                       margin: const EdgeInsets.only(bottom: 8),
                       decoration: BoxDecoration(
-                        color: Colors.black.withValues(alpha: 0.25),
+                        color: isMe ? Colors.black.withValues(alpha: 0.15) : AppColors.surfaceLight,
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Row(
+                      child: Row(
                         children: [
-                          Icon(Icons.play_arrow_rounded, color: AppColors.accentCyan, size: 22),
-                          SizedBox(width: 8),
-                          Expanded(child: AudioWaveVisualizer(barCount: 14, height: 18, isPlaying: false)),
-                          SizedBox(width: 8),
-                          Text('0:14', style: TextStyle(color: Colors.white70, fontSize: 11, fontFamily: 'monospace')),
+                          Icon(Icons.play_arrow_rounded, color: isMe ? Colors.white : AppColors.primary, size: 22),
+                          const SizedBox(width: 8),
+                          const AudioWaveVisualizer(barCount: 14, height: 18, isPlaying: false),
+                          const SizedBox(width: 8),
+                          Text(
+                            '0:14',
+                            style: TextStyle(
+                              color: isMe ? Colors.white70 : AppColors.textSecondary,
+                              fontSize: 11,
+                              fontFamily: 'monospace',
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -709,7 +733,11 @@ class _MessageBubble extends StatelessWidget {
                   // Message text
                   Text(
                     message.message,
-                    style: const TextStyle(color: Colors.white, fontSize: 13, height: 1.3),
+                    style: TextStyle(
+                      color: isMe ? Colors.white : AppColors.textPrimary,
+                      fontSize: 13,
+                      height: 1.3,
+                    ),
                   ),
 
                   const SizedBox(height: 6),
@@ -720,13 +748,13 @@ class _MessageBubble extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       if (message.isPinned) ...[
-                        const Icon(Icons.push_pin_rounded, size: 10, color: AppColors.accentCyan),
+                        Icon(Icons.push_pin_rounded, size: 10, color: isMe ? Colors.white70 : AppColors.primary),
                         const SizedBox(width: 4),
                       ],
                       Text(
                         '${message.timestamp.hour.toString().padLeft(2, '0')}:${message.timestamp.minute.toString().padLeft(2, '0')}',
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.7),
+                          color: isMe ? Colors.white.withValues(alpha: 0.85) : AppColors.textMuted,
                           fontSize: 10,
                           fontFamily: 'monospace',
                         ),
@@ -736,7 +764,7 @@ class _MessageBubble extends StatelessWidget {
                         Icon(
                           message.status == MessageStatus.read ? Icons.done_all_rounded : Icons.done_rounded,
                           size: 13,
-                          color: message.status == MessageStatus.read ? AppColors.accentCyan : Colors.white70,
+                          color: message.status == MessageStatus.read ? AppColors.white : Colors.white70,
                         ),
                       ],
                     ],

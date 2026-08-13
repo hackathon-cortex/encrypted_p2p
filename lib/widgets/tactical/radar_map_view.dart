@@ -45,7 +45,7 @@ class _RadarMapViewState extends State<RadarMapView> with SingleTickerProviderSt
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF060B12),
+        color: AppColors.surfaceElevated,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppColors.border, width: 1),
       ),
@@ -230,12 +230,12 @@ class _TacticalRadarPainter extends CustomPainter {
     final maxRadius = math.min(size.width, size.height) * 0.45 * zoom;
 
     final gridPaint = Paint()
-      ..color = const Color(0xFF16233B)
+      ..color = AppColors.border
       ..strokeWidth = 0.8
       ..style = PaintingStyle.stroke;
 
     final axisPaint = Paint()
-      ..color = const Color(0xFF1E3A5F)
+      ..color = AppColors.primaryLight.withValues(alpha: 0.4)
       ..strokeWidth = 1.0;
 
     // Draw background grid lines
@@ -249,7 +249,7 @@ class _TacticalRadarPainter extends CustomPainter {
 
     // Draw concentric radar range rings
     final ringPaint = Paint()
-      ..color = const Color(0xFF1D3557).withValues(alpha: 0.8)
+      ..color = AppColors.primary.withValues(alpha: 0.3)
       ..strokeWidth = 1.2
       ..style = PaintingStyle.stroke;
 
