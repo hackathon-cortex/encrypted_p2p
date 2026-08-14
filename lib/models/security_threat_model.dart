@@ -26,6 +26,8 @@ class SecurityThreatModel {
   final bool isResolved;
   final String? sourceIp;
   final String? deviceName;
+  final String? status;
+  final String? detectionTime;
   final String? resolutionAction;
   final DateTime? resolvedAt;
 
@@ -39,6 +41,8 @@ class SecurityThreatModel {
     this.isResolved = false,
     this.sourceIp,
     this.deviceName,
+    this.status,
+    this.detectionTime,
     this.resolutionAction,
     this.resolvedAt,
   });
@@ -53,6 +57,8 @@ class SecurityThreatModel {
     bool? isResolved,
     String? sourceIp,
     String? deviceName,
+    String? status,
+    String? detectionTime,
     String? resolutionAction,
     DateTime? resolvedAt,
   }) {
@@ -66,6 +72,8 @@ class SecurityThreatModel {
       isResolved: isResolved ?? this.isResolved,
       sourceIp: sourceIp ?? this.sourceIp,
       deviceName: deviceName ?? this.deviceName,
+      status: status ?? this.status,
+      detectionTime: detectionTime ?? this.detectionTime,
       resolutionAction: resolutionAction ?? this.resolutionAction,
       resolvedAt: resolvedAt ?? this.resolvedAt,
     );

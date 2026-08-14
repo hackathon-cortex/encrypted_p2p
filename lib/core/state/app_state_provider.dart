@@ -48,6 +48,10 @@ class AppStateProvider extends ChangeNotifier {
   int _selectedNavigationIndex = 0;
   int get selectedNavigationIndex => _selectedNavigationIndex;
 
+  // Deep linked threat ID for Security Center focus
+  String? _focusedThreatId;
+  String? get focusedThreatId => _focusedThreatId;
+
   // Root Scaffold Key for reliable drawer opening across all sub-screens
   final GlobalKey<ScaffoldState> rootScaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -58,6 +62,16 @@ class AppStateProvider extends ChangeNotifier {
   void setNavigationIndex(int index) {
     _selectedNavigationIndex = index;
     notifyListeners();
+  }
+
+  void focusSecurityThreat(String? threatId) {
+    _focusedThreatId = threatId;
+    _selectedNavigationIndex = 4; // Ensure switched to Security tab
+    notifyListeners();
+  }
+
+  void clearFocusedThreat() {
+    _focusedThreatId = null;
   }
 
   // --- AUTHENTICATION ACTIONS ---
@@ -446,6 +460,18 @@ class AppStateProvider extends ChangeNotifier {
       description: 'Diagnostic perimeter scan completed across mesh relays. Integrity verified.',
     );
 
+    notifyListeners();
+  }
+
+  Future<void> rotateEncryptionKeys() async {
+    securityService.rotateKeys();
+    auditService.logEvent(
+      eventType: 'ENCRYPTION_KEYS_ROTATED',
+      severity: AuditSeverity.info,
+      category: AuditCategory.security,
+      actor: authService.currentUser?.username ?? 'user',
+      description: 'Symmetric session keys rotated across P2P mesh network. ECDH cache refreshed.',
+    );
     notifyListeners();
   }
 

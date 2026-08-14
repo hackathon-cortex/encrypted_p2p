@@ -32,6 +32,7 @@ class NotificationService {
         priority: NotificationPriority.high,
         timestamp: now.subtract(const Duration(minutes: 35)),
         targetRoute: '/security',
+        payload: {'threatId': 'thr_01'},
       ),
       NotificationModel(
         id: 'notif_03',

@@ -32,7 +32,8 @@ class _NotificationCenterScreenState extends State<NotificationCenterScreen> {
         appState.setNavigationIndex(3); // Calls tab
         break;
       case NotificationCategory.security:
-        appState.setNavigationIndex(4); // Security tab
+        final threatId = notif.payload?['threatId'] as String? ?? 'thr_01';
+        appState.focusSecurityThreat(threatId);
         break;
       case NotificationCategory.sos:
         appState.setNavigationIndex(7); // SOS tab

@@ -41,6 +41,9 @@ class DeviceModel {
     this.locationTag = 'Primary Sector',
   });
 
+  bool get isTrusted => trustStatus == DeviceTrustStatus.trusted;
+  bool get isQuarantined => trustStatus == DeviceTrustStatus.quarantined;
+
   DeviceModel copyWith({
     String? id,
     String? name,

@@ -4,15 +4,29 @@ class SecurityService {
   final List<SecurityThreatModel> _threats = [];
   bool _isScanning = false;
   double _scanProgress = 0.0;
-  DateTime _lastScanTime = DateTime.now().subtract(const Duration(hours: 6));
-  int _failedLoginAttempts = 1;
+  DateTime _lastScanTime = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day, 8, 15);
+  DateTime _lastKeyRotationTime = DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day, 9, 42);
+  int _failedLoginAttempts = 0;
 
   List<SecurityThreatModel> get threats => List.unmodifiable(_threats);
   List<SecurityThreatModel> get activeThreats => _threats.where((t) => !t.isResolved).toList();
   bool get isScanning => _isScanning;
   double get scanProgress => _scanProgress;
   DateTime get lastScanTime => _lastScanTime;
+  DateTime get lastKeyRotationTime => _lastKeyRotationTime;
   int get failedLoginAttempts => _failedLoginAttempts;
+
+  String get formattedLastScanTime {
+    final h = _lastScanTime.hour.toString().padLeft(2, '0');
+    final m = _lastScanTime.minute.toString().padLeft(2, '0');
+    return 'Today • $h:$m';
+  }
+
+  String get formattedLastKeyRotation {
+    final h = _lastKeyRotationTime.hour.toString().padLeft(2, '0');
+    final m = _lastKeyRotationTime.minute.toString().padLeft(2, '0');
+    return 'Today • $h:$m';
+  }
 
   SecurityService() {
     _seedThreats();
@@ -24,23 +38,27 @@ class SecurityService {
     _threats.addAll([
       SecurityThreatModel(
         id: 'thr_01',
-        title: 'Unrecognized Device Connection Attempt',
-        description: 'Connection attempt from IP 192.168.1.189 using unrecognized client fingerprint.',
-        severity: ThreatSeverity.medium,
+        title: 'Unknown Handshake Attempt',
+        description: 'An unrecognized client attempted to establish a secure peer connection.',
+        severity: ThreatSeverity.high,
         threatType: ThreatType.unknownDevice,
-        timestamp: now.subtract(const Duration(minutes: 35)),
+        timestamp: DateTime(now.year, now.month, now.day, 14, 32),
         sourceIp: '192.168.1.189',
-        deviceName: 'Unknown Android Client',
+        deviceName: 'Unrecognized Mobile Relay',
+        status: 'QUARANTINED',
+        detectionTime: 'Today • 14:32',
       ),
       SecurityThreatModel(
         id: 'thr_02',
-        title: 'Failed Security Verification Challenge',
-        description: '2 invalid MFA PIN verification attempts recorded on Command Terminal.',
-        severity: ThreatSeverity.low,
+        title: 'Repeated Authentication Failure',
+        description: 'Multiple invalid authentication challenges detected and origin IP blocked by gateway firewall.',
+        severity: ThreatSeverity.medium,
         threatType: ThreatType.failedAuth,
-        timestamp: now.subtract(const Duration(hours: 2)),
+        timestamp: DateTime(now.year, now.month, now.day, 12, 18),
         sourceIp: '10.0.4.12',
         deviceName: 'Field Terminal Beta',
+        status: 'BLOCKED',
+        detectionTime: 'Today • 12:18',
       ),
       SecurityThreatModel(
         id: 'thr_03',
@@ -50,6 +68,8 @@ class SecurityService {
         threatType: ThreatType.keyMismatch,
         timestamp: now.subtract(const Duration(days: 1)),
         isResolved: true,
+        status: 'RESOLVED',
+        detectionTime: 'Yesterday • 18:20',
         resolutionAction: 'Rotated session keys and updated ECDH cache',
         resolvedAt: now.subtract(const Duration(hours: 20)),
       ),
@@ -64,10 +84,10 @@ class SecurityService {
           score -= 30;
           break;
         case ThreatSeverity.high:
-          score -= 20;
+          score -= 10;
           break;
         case ThreatSeverity.medium:
-          score -= 10;
+          score -= 6;
           break;
         case ThreatSeverity.low:
           score -= 4;
@@ -76,7 +96,7 @@ class SecurityService {
           break;
       }
     }
-    score -= (_failedLoginAttempts * 2);
+    score -= (_failedLoginAttempts > 2 ? (_failedLoginAttempts - 2) * 2 : 0);
     if (score < 10) score = 10;
     if (score > 100) score = 100;
     return score;
@@ -84,8 +104,8 @@ class SecurityService {
 
   String get securityStatusText {
     final score = securityScore;
-    if (score >= 90) return 'OPTIMAL SECURE';
-    if (score >= 75) return 'PROTECTED - MINOR ALERTS';
+    if (score == 100) return 'OPTIMAL SECURE';
+    if (score >= 80) return 'PROTECTED — ACTION REQUIRED';
     if (score >= 50) return 'ELEVATED THREAT';
     return 'CRITICAL BREACH RISK';
   }
@@ -95,10 +115,15 @@ class SecurityService {
     if (idx != -1) {
       _threats[idx] = _threats[idx].copyWith(
         isResolved: true,
+        status: 'RESOLVED',
         resolutionAction: resolutionAction,
         resolvedAt: DateTime.now(),
       );
     }
+  }
+
+  void rotateKeys() {
+    _lastKeyRotationTime = DateTime.now();
   }
 
   void addThreat({
@@ -108,6 +133,8 @@ class SecurityService {
     required ThreatType threatType,
     String? sourceIp,
     String? deviceName,
+    String? status,
+    String? detectionTime,
   }) {
     final newThreat = SecurityThreatModel(
       id: 'thr_${DateTime.now().millisecondsSinceEpoch}',
@@ -118,6 +145,8 @@ class SecurityService {
       timestamp: DateTime.now(),
       sourceIp: sourceIp,
       deviceName: deviceName,
+      status: status ?? 'QUARANTINED',
+      detectionTime: detectionTime ?? 'Just now',
     );
     _threats.insert(0, newThreat);
   }
@@ -135,7 +164,7 @@ class SecurityService {
     _scanProgress = 0.0;
 
     for (int i = 1; i <= 10; i++) {
-      await Future.delayed(const Duration(milliseconds: 150));
+      await Future.delayed(const Duration(milliseconds: 120));
       _scanProgress = i / 10.0;
       onProgress(_scanProgress);
     }
